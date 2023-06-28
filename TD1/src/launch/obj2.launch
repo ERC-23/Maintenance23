@@ -1,6 +1,6 @@
 <launch>
-    <arg name = "sw_num"/>
+    <arg name = "tags"/>
     <node name="aruco_pos" pkg="TD1" type="panel.py" output = "screen">
-        <param name = "sw" value = "$(arg sw_num)"/>
+        <param name = "tag" value = "$(arg tags)"/>
     </node>
 </launch>

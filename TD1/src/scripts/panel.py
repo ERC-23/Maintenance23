@@ -74,7 +74,7 @@ if __name__ == '__main__':
     try:
         os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-        n = rospy.get_param('~sw')
+        n = rospy.get_param('~tag')
         rospy.loginfo(n)
         Switch_arr = n.split(',')
         Switch_arr = [int(i) for i in Switch_arr]
