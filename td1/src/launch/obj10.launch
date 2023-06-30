@@ -1,0 +1,5 @@
+<launch>
+    
+    <node pkg="td1" type="home_pose.py" name="home_pose" output = "screen"/>
+    
+</launch>
