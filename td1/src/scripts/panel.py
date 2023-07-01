@@ -8,10 +8,11 @@ import sys
 import moveit_msgs.msg
 from math import pi 
 from geometry_msgs.msg import PoseStamped
-from moveit_msgs.msg import _Constraints,JointConstraint
+from moveit_msgs.msg import Constraints,JointConstraint
 from std_msgs.msg import Int8
 import subprocess
 import time
+
 
 ####################### Initialization #######################
 rospy.init_node("panel",anonymous=True)
@@ -30,6 +31,25 @@ end_effector_link = moveit_group.get_end_effector_link()
 
 moveit_group.set_goal_position_tolerance(0.005)
 moveit_group.allow_replanning(True)
+
+
+####################### Constrains #######################
+cons = Constraints()
+cons.name = 'goal_constraints'
+
+elbow_con = JointConstraint()
+elbow_con.joint_name = 'elbow_joint'
+elbow_con.position = 1.745
+elbow_con.tolerance_above = 1
+elbow_con.tolerance_below = 1
+elbow_con.weight = 1.0
+
+cons.joint_constraints.append(elbow_con)
+
+moveit_group.set_path_constraints(cons)
+
+
+
 
 ####################### Home Pose #######################
 Home_pose = [0,-2*pi/3,5*pi/9,pi/9,pi/2,-pi/2]
@@ -124,3 +144,4 @@ if __name__ == '__main__':
             
     except rospy.ROSInterruptException:
         pass
+
