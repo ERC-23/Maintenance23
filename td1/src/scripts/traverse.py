@@ -2,6 +2,7 @@
 import rospy
 import sys
 import moveit_commander
+import csv_write
 import moveit_msgs.msg as msg
 from moveit_msgs.msg import Constraints,JointConstraint
 from math import pi
