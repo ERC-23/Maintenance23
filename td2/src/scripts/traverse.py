@@ -3,29 +3,43 @@ import rospy
 import sys
 import moveit_commander
 import csv_write
-import moveit_msgs.msg as msg
+import moveit_msgs.msg
 from moveit_msgs.msg import Constraints,JointConstraint
 from math import pi
 from csv_read import get_pos
 
 rospy.init_node("moveit_press_node", anonymous = True)
-moveit_commander.roscpp_initialize(sys.argv)
-robot = moveit_commander.robot.RobotCommander()
-moveit_gp = moveit_commander.MoveGroupCommander("manipulator")
-hand = moveit_commander.MoveGroupCommander("gripper")
 
-moveit_gp.set_pose_reference_frame("base_link")
-moveit_gp.set_end_effector_link("tool0")
-moveit_gp.set_goal_position_tolerance(0.005)
-moveit_gp.set_planning_time(5)
-moveit_gp.allow_replanning(True)
-pub = rospy.Publisher("/move_group/display_planned_path",msg.DisplayTrajectory,queue_size=20)
+
+moveit_commander.roscpp_initialize(sys.argv)
+
+robot = moveit_commander.robot.RobotCommander()
+move_group = moveit_commander.MoveGroupCommander('manipulator')
+gripper = moveit_commander.MoveGroupCommander('gripper')
+
+move_group.set_planning_time(5)
+move_group.allow_replanning(True)
+
+move_group.set_pose_reference_frame('base_link')
+
+move_group.set_goal_position_tolerance(0.005)
+move_group.set_goal_orientation_tolerance(0.1)
+
+move_group.set_planner_id("APSkConfigDefault") # perfect
+move_group.set_end_effector_link('tool0')
+end_effector_link = move_group.get_end_effector_link()
+
+display_trajectory_publisher = rospy.Publisher(
+            "/move_group/display_planned_path",
+            moveit_msgs.msg.DisplayTrajectory,
+            queue_size=20,
+        )
 
 
 home = [0,-2*pi/3,5*pi/9,pi/9,pi/2,-pi/2]
 
 def go_delay(pos):
-    moveit_gp.go(pos, wait=True)
+    move_group.go(pos, wait=True)
     rospy.sleep(1)
         
 def Traverse ():
@@ -99,16 +113,16 @@ def Set_constraints():
 
     joints_con.joint_constraints.append(base_con)
 
-    moveit_gp.set_path_constraints(joints_con)
+    move_group.set_path_constraints(joints_con)
  
 if __name__ == "__main__":
     try:
         Set_constraints()
-        moveit_gp.go(home, wait=True)
+        move_group.go(home, wait=True)
         Traverse()
 
         print("##### Home Pose #####")
-        moveit_gp.go(home, wait=True)
+        move_group.go(home, wait=True)
         print("Traversing is Finsished")
         
     except rospy.ROSInterruptException:

@@ -4,6 +4,7 @@ import csv
 import os
 import rospy 
 import moveit_commander
+import moveit_msgs.msg 
 import sys
 from math import pi 
 from geometry_msgs.msg import PoseStamped
@@ -18,20 +19,29 @@ moveit_commander.roscpp_initialize(sys.argv)
 robot=moveit_commander.robot.RobotCommander()
 
 #planning group 
-moveit_group = moveit_commander.MoveGroupCommander("manipulator")
+move_group = moveit_commander.MoveGroupCommander("manipulator")
 hand = moveit_commander.MoveGroupCommander("gripper")
 
-moveit_group.set_pose_reference_frame("base_link")
-moveit_group.set_end_effector_link("tool0")
+move_group.set_planning_time(5)
+move_group.allow_replanning(True)
 
-end_effector_link = moveit_group.get_end_effector_link()
+move_group.set_pose_reference_frame("base_link")
+move_group.set_end_effector_link("tool0")
 
-moveit_group.set_goal_position_tolerance(0.005)
-moveit_group.allow_replanning(True)
+end_effector_link = move_group.get_end_effector_link()
 
+move_group.set_goal_position_tolerance(0.005)
+move_group.set_goal_orientation_tolerance(0.1)
+
+
+display_trajectory_publisher = rospy.Publisher(
+            "/move_group/display_planned_path",
+            moveit_msgs.msg.DisplayTrajectory,
+            queue_size=20,
+        )
 ####################### Home Pose #######################
 Home_pose = [0,-2*pi/3,5*pi/9,pi/9,pi/2,-pi/2]
-start_pose = moveit_group.get_current_pose().pose
+start_pose = move_group.get_current_pose().pose
 
 ####################### Constrains #######################
 def Set_constraints():
@@ -66,7 +76,7 @@ def Set_constraints():
 
     joints_con.joint_constraints.append(base_con)
 
-    moveit_group.set_path_constraints(joints_con)
+    move_group.set_path_constraints(joints_con)
  
 def close_gripper():
 
@@ -84,7 +94,7 @@ def open_gripper():
 
 def Go_home_pose():
 
-    moveit_group.go(Home_pose,wait=True)
+    move_group.go(Home_pose,wait=True)
     rospy.sleep(5)
 
 def get_pos(x):
@@ -119,11 +129,11 @@ def press_switch(pose):
     target.pose.orientation.z = start_pose.orientation.z
     target.pose.orientation.w = start_pose.orientation.w
 
-    moveit_group.set_start_state(robot.get_current_state())  
+    move_group.set_start_state(robot.get_current_state())  
 
     print("###### Reaching ",current_ID," ######")     
-    moveit_group.set_pose_target(target,end_effector_link)
-    success = moveit_group.go(wait = True)
+    move_group.set_pose_target(target,end_effector_link)
+    success = move_group.go(wait = True)
     time.sleep(5)
 
     print("###### Close gripper ######")     
@@ -132,8 +142,8 @@ def press_switch(pose):
     
     print("###### Move forward ######")     
     target.pose.position.x += 0.015
-    moveit_group.set_pose_target(target,end_effector_link)
-    success = moveit_group.go(wait = True)
+    move_group.set_pose_target(target,end_effector_link)
+    success = move_group.go(wait = True)
     time.sleep(5)
           
     print("###### Open gripper ######")     
