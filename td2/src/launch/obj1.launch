@@ -1,0 +1,6 @@
+<launch>
+    <include file= "$(find td2)/src/launch/all_aruco.launch"/>
+    <node pkg = "td2" type = "csv_write.py" name = "writer" output = "screen"/> 
+    <node pkg = "td2" type = "csv_read.py"  name = "reader" />
+    <node pkg = "td2" type = "traverse.py" name = "code" output = "screen"/>
+</launch>
